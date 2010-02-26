@@ -1,0 +1,61 @@
+NAME
+    googlesearch - command line interface to google search
+
+DESCRIPTION
+    I wanted to simply ask for top x results for something, and see a list
+    of result urls.
+
+USAGE
+    googlesearch [OPTION].. TERMS..
+
+       -m number      max results, default is 10.
+       -t             trim results display to fully qualified domain name
+       -o             override cache (set at 6 hours)
+
+  EXAMPLE USAGE
+    First 20 results for 'boston ice cream'
+
+       googlesearch  -m 20 boston ice cream
+
+CONFIG
+    You will need a ~/.googlesearch/config.yml file with: ___
+    LOCAL_GOOGLE_KEY: yourkey LOCAL_GOOGLE_KEY_REFERER:
+    siteassociatedwithabovekey
+
+    This is a YAML file.
+
+    What is the google key and key referer? You will need to have a google
+    account and google api key to use this cli. This is the LOCAL_GOOGLE_KEY
+    noted in the config file. The referer is what website you generated that
+    key for.
+
+    Generating a google search api key allows you to put a search in your
+    website. It also allows you to use this interface to search in general.
+    (I know- it seems like- why don't we just scrape http results, right?
+    No. Grow up, rookie. They provide the api, use it.)
+
+CAVEATS
+    In development. If you notice bugs, or wish for extension, please
+    contact the AUTHOR.
+
+SEE ALSO
+    Google::Search Cache::File YAML
+
+AUTHOR
+    Leo Charre leocharre at cpan dot org
+
+COPYRIGHT
+    Copyright (c) 2010 Leo Charre. All rights reserved.
+
+LICENSE
+    This package is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself, i.e., under the terms of the
+    "Artistic License" or the "GNU General Public License".
+
+DISCLAIMER
+    This package is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+    See the "GNU General Public License" for more details.
+

@@ -1,0 +1,214 @@
+#!/usr/bin/perl
+use strict;
+use vars qw($VERSION @TERMS $LOCAL_GOOGLE_KEY $LOCAL_GOOGLE_KEY_REFERER);
+use Getopt::Std::Strict 'tm:ohv';
+use Carp;
+use Cache::File;
+use Google::Search;
+use YAML;
+$VERSION = sprintf "%d.%02d", q$Revision: 1.3 $ =~ /(\d+)/g;
+
+$opt_h and print STDERR usage() and exit;
+$opt_v and print $VERSION and exit;
+
+
+my $abs_conf  = "$ENV{HOME}/.googlesearch/config.yml";
+my $abs_cache = "$ENV{HOME}/.googlesearch/cache";
+-f $abs_conf or die("Missing conf: '$abs_conf'");
+my $conf = YAML::LoadFile($abs_conf);
+$LOCAL_GOOGLE_KEY = $conf->{LOCAL_GOOGLE_KEY} or die("missing LOCAL_GOOGLE_KEY in conf");
+$LOCAL_GOOGLE_KEY_REFERER = $conf->{LOCAL_GOOGLE_KEY_REFERER} or die("missing LOCAL_GOOGLE_KEY_REFERER in conf");
+
+
+
+   
+my @TERMS = @ARGV; # so we can alter later for whatever reason
+
+
+
+
+@TERMS or die("missing args");
+$opt_m||= 10;
+
+### @TERMS
+### $opt_m
+
+my @r = _Google_Search();
+
+#_Net_Google(); # <- this module sucked ass
+
+
+
+
+         
+         
+@r or die("no results");
+
+# cache it? would make sense ..these are google search results.. hmm
+
+
+# show
+for my $url (@r){
+   if( $opt_t and $url=~/^(http:\/\/[^\/]+)/i){
+      $url = $1;
+   }
+   
+
+   print "$url\n";
+}
+
+
+
+exit;
+
+
+
+
+
+
+
+sub _Google_Search {
+
+   # actually.. it makes sense to cache here
+   my $cache_key = "$opt_m-@TERMS";
+   my $cache = Cache::File->new( cache_root => $abs_cache, default_expires => '6 hours' );
+   
+   my $results = $opt_o ? undef : $cache->thaw($cache_key);
+
+   unless( defined $results ){     
+
+      ### was not cached
+
+      my @results=(); # i think to cache a blank result we'd have to possibly set this
+      # that way a [] aref is stored and it proves true for defined
+
+      #require Google::Search;            
+      my $search = Google::Search->Web(
+         q        => "@TERMS",
+         key      => $LOCAL_GOOGLE_KEY,
+         referer  => $LOCAL_GOOGLE_KEY_REFERER,
+      );
+
+      my $result = $search->first;
+
+      my $i = 0;
+      while ($result) {
+        #print $result->number, " ", $result->uri, "\n";
+        my $url = $result->uri;
+        push @results, $url;
+        $result = $result->next;     
+
+        #warn "#got $url";
+        ++$i == $opt_m and last;        
+        
+      }
+
+      $cache->freeze( $cache_key, \@results );
+      
+      return @results;
+   }
+
+   @{$results};
+}
+
+
+
+
+sub usage { q{googlesearch [OPTION].. TERMS..
+Command line interface to google search.
+
+   -m number      max results, default is 10.
+   -t             trim results display to fully qualified domain name
+   -o             override cache (set at 6 hours)
+   -h             help
+   -v             version
+
+Try 'man googlesearch' for more info.
+}}
+
+
+
+
+
+
+__END__
+
+
+=pod
+
+=head1 NAME
+
+googlesearch - command line interface to google search
+
+=head1 DESCRIPTION
+
+I wanted to simply ask for top x results for something, and see a list of result urls.
+
+=head1 USAGE
+
+googlesearch [OPTION].. TERMS..
+
+   -m number      max results, default is 10.
+   -t             trim results display to fully qualified domain name
+   -o             override cache (set at 6 hours)
+   -h             help
+   -v             version
+
+=head2 EXAMPLE USAGE
+
+First 20 results for 'boston ice cream'
+
+   googlesearch  -m 20 boston ice cream
+
+
+=head1 CONFIG
+
+
+You will need a ~/.googlesearch/config.yml file with:
+   ___
+   LOCAL_GOOGLE_KEY: yourkey   
+   LOCAL_GOOGLE_KEY_REFERER: siteassociatedwithabovekey   
+
+This is a YAML file.
+
+What is the google key and key referer?
+You will need to have a google account and google api key to use this cli.
+This is the LOCAL_GOOGLE_KEY noted in the config file.
+The referer is what website you generated that key for.
+
+Generating a google search api key allows you to put a search in your website.
+It also allows you to use this interface to search in general. 
+(I know- it seems like- why don't we just scrape http results, right? 
+No. Grow up, rookie. They provide the api, use it.)
+
+
+=head1 CAVEATS
+
+In development. If you notice bugs, or wish for extension, please contact the AUTHOR.
+
+=head1 SEE ALSO
+
+Google::Search
+Cache::File
+YAML
+
+=head1 AUTHOR
+
+Leo Charre leocharre at cpan dot org
+
+=head1 COPYRIGHT
+
+Copyright (c) 2010 Leo Charre. All rights reserved.
+
+=head1 LICENSE
+
+This package is free software; you can redistribute it and/or modify it under the same terms as Perl itself, i.e., under the terms of the "Artistic License" or the "GNU General Public License".
+
+=head1 DISCLAIMER
+
+This package is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the "GNU General Public License" for more details.
+   
+=cut
+

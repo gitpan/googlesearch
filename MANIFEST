@@ -1,0 +1,6 @@
+INSTALL
+MANIFEST
+Makefile.PL
+README
+bin/googlesearch
+META.yml                                 Module meta-data (added by MakeMaker)

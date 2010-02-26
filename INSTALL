@@ -1,0 +1,12 @@
+
+You will need to be root.
+Download the distro..
+
+wget $URL
+tar -xvf googlesearch-*
+cd googleseearch
+perl Makefile.PL
+make install
+
+
+
